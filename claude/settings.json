@@ -157,6 +157,7 @@
     ],
     "disableBypassPermissionsMode": "disable"
   },
+  "model": "opus",
   "enableAllProjectMcpServers": false,
   "hooks": {
     "Notification": [
@@ -213,8 +214,11 @@
   "enabledPlugins": {
     "figma@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "chrome-devtools-mcp@chrome-devtools-plugins": true,
-    "swift-lsp@claude-plugins-official": true
+    "chrome-devtools-mcp@chrome-devtools-plugins": false,
+    "swift-lsp@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "anthropic-agent-skills": {
@@ -242,5 +246,5 @@
   },
   "effortLevel": "high",
   "theme": "dark-ansi",
-  "model": "sonnet"
+  "preferredNotifChannel": "auto"
 }
