@@ -66,45 +66,15 @@ echo "Done."
 link_file "$DOTFILES_DIR/git/config" "$HOME/.config/git/config"
 link_file "$DOTFILES_DIR/git/ignore" "$HOME/.config/git/ignore"
 
-# Ghostty設定
-link_file "$DOTFILES_DIR/ghostty/config" "$HOME/.config/ghostty/config"
-
-# Ghosttyテーマインストール（Catppuccin）
-GHOSTTY_THEMES_DIR="$HOME/.config/ghostty/themes"
-if [[ ! -f "$GHOSTTY_THEMES_DIR/catppuccin-frappe" ]]; then
-  echo "Installing Catppuccin theme for Ghostty..."
-  mkdir -p "$GHOSTTY_THEMES_DIR"
-  TMPDIR_CATPPUCCIN="$(mktemp -d)"
-  git clone --depth 1 https://github.com/catppuccin/ghostty.git "$TMPDIR_CATPPUCCIN"
-  for f in "$TMPDIR_CATPPUCCIN/themes/"*.conf; do
-    cp "$f" "$GHOSTTY_THEMES_DIR/$(basename "${f%.conf}")"
-  done
-  rm -rf "$TMPDIR_CATPPUCCIN"
-else
-  echo "Catppuccin theme for Ghostty is already installed."
-fi
-
 # Neovim設定（ディレクトリごとリンク）
 link_file "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
 
 # Zed設定
 link_file "$DOTFILES_DIR/zed/settings.json" "$HOME/.config/zed/settings.json"
 
-# Starship設定
-link_file "$DOTFILES_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
-
 # Zsh設定
 link_file "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
 link_file "$DOTFILES_DIR/zsh" "$HOME/.config/zsh"
-
-# Terminal.appプロファイル（.terminalファイルを直接インポート）
-TERMINAL_PROFILE="Catppuccin Frappe"
-echo "Importing Terminal.app profile..."
-open -g "$DOTFILES_DIR/terminal/catppuccin-frappe.terminal"
-sleep 1
-defaults write com.apple.Terminal "Default Window Settings" "$TERMINAL_PROFILE"
-defaults write com.apple.Terminal "Startup Window Settings" "$TERMINAL_PROFILE"
-echo "Done."
 
 # Claude Code設定
 mkdir -p "$HOME/.claude"

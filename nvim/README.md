@@ -12,7 +12,6 @@ nvim/
     │   ├── options.lua      -- 基本オプション
     │   └── keymaps.lua      -- キーマップ
     └── plugins/
-        ├── colorscheme.lua  -- カラースキーム (catppuccin)
         ├── telescope.lua    -- ファジーファインダー
         ├── treesitter.lua   -- シンタックスハイライト
         ├── mini.lua         -- mini.pairs + mini.surround
