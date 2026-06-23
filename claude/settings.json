@@ -245,6 +245,7 @@
     ]
   },
   "effortLevel": "high",
+  "autoMemoryEnabled": false,
   "theme": "dark-ansi",
   "preferredNotifChannel": "auto"
 }

@@ -1,5 +1,16 @@
-## Response
-Always response in Japanese.
+## Language rules
+- Conduct all internal reasoning, analysis, and rough drafting
+  (the stage where you organize your thoughts) in English.
+- Write every final answer presented to the user in natural,
+  readable Japanese.
+- Do not paste English reasoning directly—reconstruct the content
+  as proper Japanese (avoid stiff, literal translation).
+- For technical terms, you may add the English in parentheses after
+  the Japanese when helpful, e.g. 強化学習 (reinforcement learning).
+- Leave no English thinking notes or English sentences in the
+  final answer.
+
+Apply these rules to all subsequent responses.
 
 ## Key Principles:
 1. Agent-First: Delegate to specialized agents for complex work
