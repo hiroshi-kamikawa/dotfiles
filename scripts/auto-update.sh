@@ -1,5 +1,5 @@
 #!/bin/bash
-# Homebrew と Claude Code を定期的に自動更新するスクリプト。
+# Homebrew・Claude Code・Wrangler を定期的に自動更新するスクリプト。
 # launchd から呼び出される想定。手動実行も可能。
 set -uo pipefail
 
@@ -65,11 +65,18 @@ else
   log "SKIP:  claude not found"
 fi
 
+# Wrangler（Cloudflare CLI）
+if command -v wrangler >/dev/null 2>&1; then
+  run_step "wrangler update" npm install -g wrangler@latest
+else
+  log "SKIP:  wrangler not found"
+fi
+
 log "===== auto-update done ====="
 
 # 結果を通知センターに表示
 if [[ ${#FAILED_STEPS[@]} -eq 0 ]]; then
-  notify "アップデート完了" "Homebrew と Claude Code を最新にしました"
+  notify "アップデート完了" "Homebrew・Claude Code・Wrangler を最新にしました"
 else
   notify "アップデートに失敗" "${FAILED_STEPS[*]} でエラーが発生しました。ログをご確認ください"
 fi

@@ -57,6 +57,14 @@ else
   echo "Playwright is already installed."
 fi
 
+# Wrangler（Cloudflare CLI）インストール
+if ! command -v wrangler &>/dev/null; then
+  echo "Installing Wrangler..."
+  npm install -g wrangler@latest
+else
+  echo "Wrangler is already installed."
+fi
+
 # macOS設定
 echo "Applying macOS settings..."
 bash "$DOTFILES_DIR/macos.sh"
