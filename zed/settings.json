@@ -23,6 +23,7 @@
     "tree_view": true
   },
   "agent": {
+    "notify_when_agent_waiting": "all_screens",
     "dock": "right",
     "default_model": {
       "provider": "copilot_chat",
