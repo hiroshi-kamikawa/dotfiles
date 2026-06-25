@@ -155,8 +155,8 @@
       "Bash(npm publish*)",
       "Bash(rm:*)"
     ],
-    "disableBypassPermissionsMode": "disable",
-    "defaultMode": "auto"
+    "defaultMode": "auto",
+    "disableBypassPermissionsMode": "disable"
   },
   "model": "opus",
   "enableAllProjectMcpServers": false,
@@ -213,13 +213,13 @@
     "command": "sh $HOME/.claude/statusline.sh"
   },
   "enabledPlugins": {
-    "figma@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "chrome-devtools-mcp@chrome-devtools-plugins": false,
+    "chrome-devtools-mcp@chrome-devtools-plugins": true,
     "swift-lsp@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": true
+    "pr-review-toolkit@claude-plugins-official": true,
+    "cloudflare@cloudflare": true
   },
   "extraKnownMarketplaces": {
     "anthropic-agent-skills": {
@@ -232,6 +232,12 @@
       "source": {
         "source": "github",
         "repo": "ChromeDevTools/chrome-devtools-mcp"
+      }
+    },
+    "cloudflare": {
+      "source": {
+        "source": "github",
+        "repo": "cloudflare/skills"
       }
     }
   },
