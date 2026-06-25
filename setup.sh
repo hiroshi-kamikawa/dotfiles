@@ -49,7 +49,9 @@ else
 fi
 
 # Playwrightインストール
-if ! npx playwright --version &>/dev/null 2>&1; then
+# npx は未インストール時に確認プロンプトを出して入力待ちでハングするため、
+# --no-install を付けて「ローカル/グローバルに存在するか」だけを判定する
+if ! npx --no-install playwright --version &>/dev/null; then
   echo "Installing Playwright..."
   npm install -g playwright
   npx playwright install --with-deps chromium
