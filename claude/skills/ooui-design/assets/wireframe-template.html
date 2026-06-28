@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ワイヤーフレーム: APP_NAME</title>
+<!--
+  低精度ワイヤーフレーム雛形（OOUIスキル フェーズ6）
+  使い方:
+  - SCREENS にビュー設計（05-views）の各画面を定義する。
+  - type は "collection"（一覧）か "single"（単一）。
+  - 遷移は data-goto="#screen-id" を持つ要素クリックで行う（renderで付与）。
+  - これはラフ。スタイルは最小限に保つこと。
+-->
+<style>
+  :root { --line:#bbb; --bg:#f5f5f5; --box:#fff; --muted:#777; }
+  * { box-sizing:border-box; }
+  body { font-family: system-ui, sans-serif; margin:0; color:#222; background:var(--bg); }
+  header { background:#e8e8e8; border-bottom:1px solid var(--line); padding:10px 16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  header .title { font-weight:700; }
+  nav.root { display:flex; gap:8px; flex-wrap:wrap; }
+  nav.root button { cursor:pointer; }
+  main { padding:16px; max-width:900px; margin:0 auto; }
+  .screen { display:none; }
+  .screen.active { display:block; }
+  .crumb { color:var(--muted); font-size:12px; margin-bottom:8px; }
+  h2 { margin:4px 0 12px; }
+  button, .btn { border:1px solid var(--line); background:var(--box); padding:6px 10px; border-radius:4px; font-size:13px; cursor:pointer; }
+  .actions { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+  table { width:100%; border-collapse:collapse; background:var(--box); }
+  th, td { border:1px solid var(--line); padding:8px; text-align:left; font-size:13px; }
+  tr.row { cursor:pointer; }
+  tr.row:hover { background:#eef; }
+  .prop { background:var(--box); border:1px solid var(--line); border-radius:4px; padding:10px; margin-bottom:8px; }
+  .prop .k { color:var(--muted); font-size:11px; }
+  .section { margin-top:18px; }
+  .section h3 { font-size:13px; color:var(--muted); border-bottom:1px solid var(--line); padding-bottom:4px; }
+  .placeholder { border:1px dashed var(--line); color:var(--muted); padding:16px; text-align:center; border-radius:4px; }
+</style>
+</head>
+<body>
+<header>
+  <span class="title">APP_NAME（ワイヤーフレーム）</span>
+  <nav class="root" id="rootnav"></nav>
+</header>
+<main id="app"></main>
+
+<script>
+// === ここをビュー設計に合わせて編集する ===
+// 各画面: { id, title, type:'collection'|'single', parent?, columns?, rows?, props?, actions?, related? }
+const SCREENS = [
+  {
+    id: 'object-a-list', title: 'オブジェクトA 一覧', type: 'collection',
+    columns: ['名称', '状態'],
+    rows: [
+      { goto:'object-a-detail', cells:['サンプル1', '進行中'] },
+      { goto:'object-a-detail', cells:['サンプル2', '完了'] }
+    ],
+    actions: [{ label:'新規作成', goto:'object-a-detail' }]
+  },
+  {
+    id: 'object-a-detail', title: 'オブジェクトA 詳細', type: 'single', parent:'object-a-list',
+    props: [['名称','サンプル1'], ['状態','進行中']],
+    actions: [{ label:'編集' }, { label:'削除' }],
+    related: [{ label:'関連オブジェクトB 一覧', goto:'object-b-list' }]
+  },
+  {
+    id: 'object-b-list', title: 'オブジェクトB 一覧', type: 'collection', parent:'object-a-detail',
+    columns: ['項目'],
+    rows: [{ cells:['B-1'] }],
+    actions: [{ label:'新規作成' }]
+  }
+];
+const ROOT = ['object-a-list']; // ルートナビに出す画面id
+// === 編集ここまで ===
+
+const byId = id => SCREENS.find(s => s.id === id);
+
+function renderRootNav() {
+  const nav = document.getElementById('rootnav');
+  nav.innerHTML = '';
+  ROOT.forEach(id => {
+    const s = byId(id); if (!s) return;
+    const b = document.createElement('button');
+    b.textContent = s.title;
+    b.onclick = () => go(id);
+    nav.appendChild(b);
+  });
+}
+
+function el(html) { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; }
+
+function renderScreen(s) {
+  const wrap = document.createElement('section');
+  wrap.className = 'screen';
+  wrap.id = 'screen-' + s.id;
+
+  if (s.parent) {
+    const p = byId(s.parent);
+    const c = el(`<div class="crumb">← <a href="#${s.parent}">${p ? p.title : '戻る'}</a></div>`);
+    wrap.appendChild(c);
+  }
+  wrap.appendChild(el(`<h2>${s.title} <small style="color:#999;font-weight:400">[${s.type === 'collection' ? 'コレクション' : 'シングル'}]</small></h2>`));
+
+  if (s.actions && s.actions.length) {
+    const a = document.createElement('div'); a.className = 'actions';
+    s.actions.forEach(act => {
+      const b = document.createElement('button'); b.textContent = act.label;
+      if (act.goto) b.onclick = () => go(act.goto);
+      a.appendChild(b);
+    });
+    wrap.appendChild(a);
+  }
+
+  if (s.type === 'collection') {
+    const t = document.createElement('table');
+    const thead = '<thead><tr>' + (s.columns || []).map(c => `<th>${c}</th>`).join('') + '</tr></thead>';
+    const tbody = '<tbody>' + (s.rows || []).map((r, i) =>
+      `<tr class="row" data-i="${i}">` + r.cells.map(c => `<td>${c}</td>`).join('') + '</tr>'
+    ).join('') + '</tbody>';
+    t.innerHTML = thead + tbody;
+    t.querySelectorAll('tr.row').forEach(tr => {
+      const r = s.rows[+tr.dataset.i];
+      if (r.goto) tr.onclick = () => go(r.goto);
+    });
+    wrap.appendChild(t);
+  } else {
+    (s.props || []).forEach(([k, v]) => {
+      wrap.appendChild(el(`<div class="prop"><div class="k">${k}</div><div>${v}</div></div>`));
+    });
+    if (s.related && s.related.length) {
+      const sec = document.createElement('div'); sec.className = 'section';
+      sec.appendChild(el('<h3>関連</h3>'));
+      s.related.forEach(rel => {
+        const b = document.createElement('button'); b.textContent = rel.label;
+        if (rel.goto) b.onclick = () => go(rel.goto);
+        sec.appendChild(b);
+      });
+      wrap.appendChild(sec);
+    }
+  }
+  return wrap;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  SCREENS.forEach(s => app.appendChild(renderScreen(s)));
+  renderRootNav();
+}
+
+function go(id) { location.hash = id; }
+function show() {
+  const id = location.hash.replace('#', '') || (ROOT[0] || (SCREENS[0] && SCREENS[0].id));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('screen-' + id);
+  if (target) target.classList.add('active');
+}
+
+window.addEventListener('hashchange', show);
+render();
+show();
+</script>
+</body>
+</html>
