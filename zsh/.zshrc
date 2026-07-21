@@ -80,13 +80,6 @@ if [[ -n "${HOMEBREW_PREFIX-}" ]]; then
 fi
 export PATH="$HOME/.local/bin:$PATH"
 
-# bun completions
-[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-
 # pnpm
 export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in

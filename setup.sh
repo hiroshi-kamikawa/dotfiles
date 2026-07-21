@@ -92,7 +92,7 @@ link_file "$DOTFILES_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 link_file "$DOTFILES_DIR/claude/settings.json" "$HOME/.claude/settings.json"
 link_file "$DOTFILES_DIR/claude/statusline.sh" "$HOME/.claude/statusline.sh"
 link_file "$DOTFILES_DIR/claude/rules" "$HOME/.claude/rules"
-link_file "$DOTFILES_DIR/claude/skills" "$HOME/.claude/skills"
+link_file "$DOTFILES_DIR/skills" "$HOME/.claude/skills"
 link_file "$DOTFILES_DIR/claude/agents" "$HOME/.claude/agents"
 
 # Codex設定
@@ -101,7 +101,9 @@ link_file "$DOTFILES_DIR/claude/agents" "$HOME/.claude/agents"
 # hooksは管理元の変更を即時反映できるようシンボリックリンクにする。
 bash "$DOTFILES_DIR/codex/setup.sh" \
   "$DOTFILES_DIR/codex" \
-  "$HOME/.codex"
+  "$HOME/.codex" \
+  "$DOTFILES_DIR/skills" \
+  "$HOME/.agents/skills"
 
 # 自動アップデート用 LaunchAgent（毎日12時に brew/claude を更新）
 echo "Setting up auto-update LaunchAgent..."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "HK Skill Creator"
+  short_description: "Create portable English agent skills"
+  default_prompt: "Use $hk-skill-creator to create a portable skill for Codex and Claude."

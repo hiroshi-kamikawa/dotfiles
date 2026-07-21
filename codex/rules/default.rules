@@ -1,0 +1,68 @@
+# Read-only commands
+
+# Do not allow the `git` prefix itself. That would also permit destructive
+# subcommands such as `reset` and `clean`.
+prefix_rule(
+    pattern = [
+        "git",
+        [
+            "blame",
+            "describe",
+            "diff",
+            "grep",
+            "log",
+            "ls-files",
+            "rev-parse",
+            "show",
+            "status",
+        ],
+    ],
+    decision = "allow",
+    justification = "Read-only Git inspection",
+    match = [
+        "git status --short",
+        "git diff --stat",
+        "git show HEAD",
+        "git rev-parse --show-toplevel",
+    ],
+    not_match = [
+        "git add README.md",
+        "git reset --hard HEAD",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        ["file", "head", "ls", "pwd", "stat", "tail", "wc", "which"],
+    ],
+    decision = "allow",
+    justification = "Read-only filesystem inspection",
+    match = [
+        "pwd",
+        "ls -la",
+        "head -n 20 README.md",
+        "file README.md",
+    ],
+    not_match = [
+        "rm -rf build",
+    ],
+)
+
+# State-changing commands
+
+# These commands were explicitly approved before rules were moved into
+# dotfiles. Keep them separate from the read-only rules above.
+prefix_rule(
+    pattern = ["git", ["commit", "push"]],
+    decision = "allow",
+    justification = "Explicitly approved Git publishing workflow",
+    match = [
+        "git commit -m update",
+        "git push",
+        "git push origin feature-branch",
+    ],
+    not_match = [
+        "git add README.md",
+        "git reset --hard HEAD",
+    ],
+)

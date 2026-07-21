@@ -5,11 +5,21 @@ cd ~/dotfiles
 bash setup.sh
 ```
 
+## 共通Skills
+
+Claude Code と Codex で使うskillsは `skills/` を正として管理する。
+`setup.sh` の実行時に、Claude向けの `~/.claude/skills` はディレクトリ全体を
+`skills/` へリンクする。Codex向けの `~/.agents/skills/` には各skillを個別に
+リンクし、Codex固有またはプラグイン由来のskillはそのまま保持する。
+
+同名のCodex側skillが既にある場合は、dotfiles側を正としてリンクへ置き換える。
+新しい共通skillを追加した後は、`bash ~/dotfiles/codex/setup.sh` を再実行する。
+
 ## Codex設定
 
 Codex のユーザー共通設定は `codex/` を正として管理する。`setup.sh` の実行時に、
 `config.toml`、`AGENTS.md`、`review.config.toml` は `~/.codex/` の同名ファイルを
-上書きし、`hooks.json` と `hooks/` はシンボリックリンクへ置き換える。
+上書きし、`hooks.json`、`hooks/`、`rules/` はシンボリックリンクへ置き換える。
 
 この処理は既存の同名ファイル、ディレクトリ、管理外シンボリックリンクも
 上書きする。Codex が `config.toml` に追記した端末固有設定も次回実行時に失われる。
