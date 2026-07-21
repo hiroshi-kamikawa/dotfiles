@@ -194,5 +194,23 @@ class HooksConfigTests(unittest.TestCase):
         self.assertIn("post_tool_use.py", serialized)
 
 
+class CodexSetupWiringTests(unittest.TestCase):
+    def test_setup_manages_all_versioned_codex_files(self) -> None:
+        root_setup = (ROOT / "setup.sh").read_text()
+        codex_setup = (ROOT / "codex" / "setup.sh").read_text()
+
+        self.assertIn("codex/setup.sh", root_setup)
+
+        for managed_name in (
+            "config.toml",
+            "hooks.json",
+            "hooks",
+            "AGENTS.md",
+            "review.config.toml",
+        ):
+            with self.subTest(managed_name=managed_name):
+                self.assertIn(managed_name, codex_setup)
+
+
 if __name__ == "__main__":
     unittest.main()
