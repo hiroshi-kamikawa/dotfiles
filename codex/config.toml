@@ -1,0 +1,11 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+# Codexの組み込みモデルとプロバイダーを利用するため、固定しない。
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+personality = "pragmatic"
+
+[shell_environment_policy]
+inherit = "core"
+ignore_default_excludes = false

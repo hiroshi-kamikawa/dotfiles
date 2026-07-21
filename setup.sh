@@ -95,6 +95,19 @@ link_file "$DOTFILES_DIR/claude/rules" "$HOME/.claude/rules"
 link_file "$DOTFILES_DIR/claude/skills" "$HOME/.claude/skills"
 link_file "$DOTFILES_DIR/claude/agents" "$HOME/.claude/agents"
 
+# Codex設定
+# config.tomlには端末固有の状態も追記されるため、共有ひな型から初回だけ実ファイルを作る
+# 旧方式で作成した管理対象シンボリックリンクは、現在の内容を保った実ファイルへ移行する
+bash "$DOTFILES_DIR/codex/setup-config.sh" \
+  "$DOTFILES_DIR/codex/config.toml" \
+  "$HOME/.codex/config.toml"
+bash "$DOTFILES_DIR/codex/setup-hooks.sh" \
+  "$DOTFILES_DIR/codex/hooks.json" \
+  "$HOME/.codex/hooks.json"
+bash "$DOTFILES_DIR/codex/setup-hooks.sh" \
+  "$DOTFILES_DIR/codex/hooks" \
+  "$HOME/.codex/hooks"
+
 # 自動アップデート用 LaunchAgent（毎日12時に brew/claude を更新）
 echo "Setting up auto-update LaunchAgent..."
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"

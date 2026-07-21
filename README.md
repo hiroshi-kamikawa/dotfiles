@@ -5,6 +5,24 @@ cd ~/dotfiles
 bash setup.sh
 ```
 
+## Codex hooks
+
+Codex のユーザー共通 hooks は `codex/hooks.json` と `codex/hooks/` で管理し、
+`setup.sh` が `~/.codex/hooks.json` と `~/.codex/hooks` へシンボリックリンクを
+作成する。
+
+現在の構成では、高確度の秘密情報、force push、`git reset --hard`、
+`--no-verify` や `core.hooksPath` による Git hooks の回避を実行前に防ぐ。
+ファイル編集後は追加されたデバッグ用コードを警告する。フォーマッターや
+テストはリポジトリごとに異なるため、グローバル hooks からは実行しない。
+これらは補助的なガードであり、完全なセキュリティ境界ではない。保護ブランチ、
+Git hooks、CI、専用の秘密情報スキャナーを主な防御として併用する。
+
+既存の `~/.codex/hooks.json` と管理元の内容が異なる場合や、管理外の
+シンボリックリンクがある場合は、上書きせずにセットアップを停止する。
+リンク後に hooks を変更した場合は、Codex CLI の `/hooks` で内容を確認して
+再度信頼する。
+
 ## 自動アップデート
 
 `setup.sh` を実行すると、Homebrew と Claude Code を毎日 12:00 に自動更新する
