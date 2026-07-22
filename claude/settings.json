@@ -8,6 +8,7 @@
   },
   "permissions": {
     "allow": [
+      "mcp__claude_ai_Figma__get_design_context",
       "mcp__chrome-devtools__console_messages",
       "mcp__chrome-devtools__emulate",
       "mcp__chrome-devtools__emulate_cpu",
