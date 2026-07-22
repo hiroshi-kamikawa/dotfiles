@@ -11,6 +11,7 @@ inherit = "core"
 ignore_default_excludes = false
 
 [tui]
+raw_output_mode = true
 status_line = [
   "model-with-reasoning",
   "context-used",
