@@ -66,3 +66,6 @@ prefix_rule(
         "git reset --hard HEAD",
     ],
 )
+prefix_rule(pattern=["gh", "repo", "view"], decision="allow")
+prefix_rule(pattern=["gh", "repo", "create"], decision="allow")
+prefix_rule(pattern=["git", "add", "-A"], decision="allow")

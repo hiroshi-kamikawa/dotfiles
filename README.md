@@ -9,11 +9,11 @@ bash setup.sh
 
 Claude Code と Codex で使うskillsは `skills/` を正として管理する。
 `setup.sh` の実行時に、Claude向けの `~/.claude/skills` はディレクトリ全体を
-`skills/` へリンクする。Codex向けの `~/.agents/skills/` には各skillを個別に
-リンクし、Codex固有またはプラグイン由来のskillはそのまま保持する。
+`skills/` へリンクする。Codex向けの `~/.agents/skills` もディレクトリ全体を
+`skills/` へリンクするため、共通skillの追加や削除はそのまま両方へ反映される。
 
-同名のCodex側skillが既にある場合は、dotfiles側を正としてリンクへ置き換える。
-新しい共通skillを追加した後は、`bash ~/dotfiles/codex/setup.sh` を再実行する。
+Codex専用のユーザーskillも、管理元である `skills/` に追加する。
+Codexの組み込みskillやプラグイン由来のskillは別の場所で管理される。
 
 ## Codex設定
 

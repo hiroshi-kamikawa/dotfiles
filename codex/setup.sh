@@ -21,10 +21,9 @@ for managed_link in hooks.json hooks rules; do
   fi
 done
 
-bash "$SCRIPT_DIR/../skills/setup.sh" \
+bash "$SCRIPT_DIR/setup-link.sh" \
   "$SHARED_SKILLS_DIR" \
-  "$AGENT_SKILLS_DIR" \
-  "$SCRIPT_DIR/setup-link.sh"
+  "$AGENT_SKILLS_DIR"
 
 mkdir -p "$DESTINATION_DIR"
 

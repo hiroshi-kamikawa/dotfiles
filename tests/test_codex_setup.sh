@@ -10,7 +10,7 @@ DESTINATION_DIR="$TEST_DIR/.codex"
 AGENT_SKILLS_DIR="$TEST_DIR/.agents/skills"
 mkdir -p "$DESTINATION_DIR/sessions"
 mkdir -p "$AGENT_SKILLS_DIR/codex-only"
-printf '%s\n' 'preserve' >"$AGENT_SKILLS_DIR/codex-only/SKILL.md"
+printf '%s\n' 'replaced' >"$AGENT_SKILLS_DIR/codex-only/SKILL.md"
 printf '%s\n' 'preserve' >"$DESTINATION_DIR/auth.json"
 printf '%s\n' 'preserve' >"$DESTINATION_DIR/sessions/session.jsonl"
 printf '%s\n' 'old config' >"$DESTINATION_DIR/config.toml"
@@ -36,12 +36,8 @@ done
 
 [[ "$(<"$DESTINATION_DIR/auth.json")" == "preserve" ]]
 [[ "$(<"$DESTINATION_DIR/sessions/session.jsonl")" == "preserve" ]]
-[[ "$(<"$AGENT_SKILLS_DIR/codex-only/SKILL.md")" == "preserve" ]]
-
-for skill_dir in "$ROOT_DIR"/skills/*; do
-  skill_name="$(basename "$skill_dir")"
-  [[ -L "$AGENT_SKILLS_DIR/$skill_name" ]]
-  [[ "$(readlink "$AGENT_SKILLS_DIR/$skill_name")" == "$skill_dir" ]]
-done
+[[ -L "$AGENT_SKILLS_DIR" ]]
+[[ "$(readlink "$AGENT_SKILLS_DIR")" == "$ROOT_DIR/skills" ]]
+[[ ! -e "$AGENT_SKILLS_DIR/codex-only" ]]
 
 echo "Codex setup integration test passed."
