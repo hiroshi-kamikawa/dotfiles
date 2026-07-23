@@ -116,10 +116,7 @@
       "Edit(**/*.md)",
       "WebFetch(domain:www.figma.com)",
       "WebFetch(domain:fonts.googleapis.com)",
-      "WebFetch(domain:fonts.gstatic.com)",
-      "Skill(strap)",
-      "Bash(~/dotfiles/claude/skills/strap/strap *)",
-      "Read(~/dotfiles/claude/skills/strap/*)"
+      "WebFetch(domain:fonts.gstatic.com)"
     ],
     "deny": [
       "mcp__chrome-devtools__click",

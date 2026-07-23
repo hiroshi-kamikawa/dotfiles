@@ -1,5 +1,4 @@
 .DS_Store
-claude/skills/strap/strap-cli-env.json
 __pycache__/
 *.py[cod]
 nvim/lazy-lock.json
