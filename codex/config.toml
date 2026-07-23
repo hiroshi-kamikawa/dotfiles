@@ -2,6 +2,7 @@
 
 # Codexの組み込みモデルとプロバイダーを利用するため、固定しない。
 approval_policy = "on-request"
+approvals_reviewer = "auto_review"
 sandbox_mode = "workspace-write"
 web_search = "cached"
 personality = "pragmatic"
