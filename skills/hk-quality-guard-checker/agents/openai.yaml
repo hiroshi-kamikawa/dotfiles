@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repository Quality Guard"
+  short_description: "Audit and install repository quality safeguards"
+  default_prompt: "Use $hk-quality-guard-checker to inspect this repository, design the smallest suitable quality guard, apply only authorized changes, validate them, and report remaining risks."
