@@ -7,7 +7,7 @@ DESTINATION_DIR="${2:-${CODEX_HOME:-$HOME/.codex}}"
 SHARED_SKILLS_DIR="${3:-$(cd "$SCRIPT_DIR/.." && pwd)/skills}"
 AGENT_SKILLS_DIR="${4:-${AGENTS_HOME:-$HOME/.agents}/skills}"
 
-for managed_file in config.toml AGENTS.md review.config.toml; do
+for managed_file in AGENTS.md review.config.toml; do
   if [[ ! -f "$SOURCE_DIR/$managed_file" ]]; then
     echo "Codex managed file does not exist: $SOURCE_DIR/$managed_file" >&2
     exit 1
@@ -27,7 +27,7 @@ bash "$SCRIPT_DIR/setup-link.sh" \
 
 mkdir -p "$DESTINATION_DIR"
 
-for managed_file in config.toml AGENTS.md review.config.toml; do
+for managed_file in AGENTS.md review.config.toml; do
   bash "$SCRIPT_DIR/setup-config.sh" \
     "$SOURCE_DIR/$managed_file" \
     "$DESTINATION_DIR/$managed_file"

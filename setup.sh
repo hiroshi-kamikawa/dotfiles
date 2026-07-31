@@ -96,9 +96,8 @@ link_file "$DOTFILES_DIR/skills" "$HOME/.claude/skills"
 link_file "$DOTFILES_DIR/claude/agents" "$HOME/.claude/agents"
 
 # Codex設定
-# dotfiles側を正として、管理対象を実行のたびに上書きする。
-# configファイルはCodexが端末固有の状態を追記するため実ファイルとして配置し、
-# hooksは管理元の変更を即時反映できるようシンボリックリンクにする。
+# hooksは、管理元の変更を即時反映できるようdotfiles側へリンクする。
+# ~/.codex/config.tomlは端末ローカルの設定として変更しない。
 bash "$DOTFILES_DIR/codex/setup.sh" \
   "$DOTFILES_DIR/codex" \
   "$HOME/.codex" \

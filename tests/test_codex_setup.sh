@@ -23,7 +23,10 @@ bash "$SETUP_SCRIPT" \
   "$ROOT_DIR/skills" \
   "$AGENT_SKILLS_DIR"
 
-for managed_file in config.toml AGENTS.md review.config.toml; do
+[[ -f "$DESTINATION_DIR/config.toml" && ! -L "$DESTINATION_DIR/config.toml" ]]
+[[ "$(<"$DESTINATION_DIR/config.toml")" == "old config" ]]
+
+for managed_file in AGENTS.md review.config.toml; do
   cmp -s "$ROOT_DIR/codex/$managed_file" "$DESTINATION_DIR/$managed_file"
   [[ -f "$DESTINATION_DIR/$managed_file" && ! -L "$DESTINATION_DIR/$managed_file" ]]
   [[ "$(stat -f '%Lp' "$DESTINATION_DIR/$managed_file")" == "600" ]]

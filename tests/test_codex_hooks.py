@@ -202,7 +202,6 @@ class CodexSetupWiringTests(unittest.TestCase):
         self.assertIn("codex/setup.sh", root_setup)
 
         for managed_name in (
-            "config.toml",
             "hooks.json",
             "hooks",
             "AGENTS.md",
@@ -210,6 +209,9 @@ class CodexSetupWiringTests(unittest.TestCase):
         ):
             with self.subTest(managed_name=managed_name):
                 self.assertIn(managed_name, codex_setup)
+
+        self.assertNotIn('"$SOURCE_DIR/config.toml"', codex_setup)
+        self.assertNotIn('"$DESTINATION_DIR/config.toml"', codex_setup)
 
 
 if __name__ == "__main__":

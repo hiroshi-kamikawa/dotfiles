@@ -17,12 +17,15 @@ Codexの組み込みskillやプラグイン由来のskillは別の場所で管�
 
 ## Codex設定
 
-Codex のユーザー共通設定は `codex/` を正として管理する。`setup.sh` の実行時に、
-`config.toml`、`AGENTS.md`、`review.config.toml` は `~/.codex/` の同名ファイルを
-上書きし、`hooks.json`、`hooks/`、`rules/` はシンボリックリンクへ置き換える。
+Codex の hooks とルールは `codex/` を正として管理する。`setup.sh` の実行時に、
+`hooks.json`、`hooks/`、`rules/` は `~/.codex/` の同名パスを
+シンボリックリンクへ置き換える。
 
+`AGENTS.md` と `review.config.toml` は管理元の内容で同名ファイルを上書きする。
 この処理は既存の同名ファイル、ディレクトリ、管理外シンボリックリンクも
-上書きする。Codex が `config.toml` に追記した端末固有設定も次回実行時に失われる。
+置き換える。
+`~/.codex/config.toml` は端末ローカルの設定として扱い、dotfiles では管理せず、
+`setup.sh` からも変更しない。
 `auth.json`、履歴、キャッシュ、インストール済みプラグインなど、`codex/` に
 対応する管理元がない状態ファイルは変更しない。
 
