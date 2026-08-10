@@ -10,7 +10,7 @@ DESTINATION_DIR="$TEST_DIR/.codex"
 AGENT_SKILLS_DIR="$TEST_DIR/.agents/skills"
 mkdir -p "$DESTINATION_DIR/sessions"
 mkdir -p "$AGENT_SKILLS_DIR/codex-only"
-printf '%s\n' 'replaced' >"$AGENT_SKILLS_DIR/codex-only/SKILL.md"
+printf '%s\n' 'preserve' >"$AGENT_SKILLS_DIR/codex-only/SKILL.md"
 printf '%s\n' 'preserve' >"$DESTINATION_DIR/auth.json"
 printf '%s\n' 'preserve' >"$DESTINATION_DIR/sessions/session.jsonl"
 printf '%s\n' 'old config' >"$DESTINATION_DIR/config.toml"
@@ -19,9 +19,7 @@ printf '%s\n' 'old hook' >"$DESTINATION_DIR/hooks/old.py"
 
 bash "$SETUP_SCRIPT" \
   "$ROOT_DIR/codex" \
-  "$DESTINATION_DIR" \
-  "$ROOT_DIR/skills" \
-  "$AGENT_SKILLS_DIR"
+  "$DESTINATION_DIR"
 
 [[ -f "$DESTINATION_DIR/config.toml" && ! -L "$DESTINATION_DIR/config.toml" ]]
 [[ "$(<"$DESTINATION_DIR/config.toml")" == "old config" ]]
@@ -39,8 +37,7 @@ done
 
 [[ "$(<"$DESTINATION_DIR/auth.json")" == "preserve" ]]
 [[ "$(<"$DESTINATION_DIR/sessions/session.jsonl")" == "preserve" ]]
-[[ -L "$AGENT_SKILLS_DIR" ]]
-[[ "$(readlink "$AGENT_SKILLS_DIR")" == "$ROOT_DIR/skills" ]]
-[[ ! -e "$AGENT_SKILLS_DIR/codex-only" ]]
+[[ -d "$AGENT_SKILLS_DIR" && ! -L "$AGENT_SKILLS_DIR" ]]
+[[ "$(<"$AGENT_SKILLS_DIR/codex-only/SKILL.md")" == "preserve" ]]
 
 echo "Codex setup integration test passed."

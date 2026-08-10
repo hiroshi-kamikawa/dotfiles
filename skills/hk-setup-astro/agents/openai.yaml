@@ -1,4 +1,0 @@
-interface:
-  display_name: "HK Setup Astro"
-  short_description: "Set up and audit an integrated Astro starter"
-  default_prompt: "Use $hk-setup-astro to complete this task."

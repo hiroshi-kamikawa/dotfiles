@@ -1,3 +1,6 @@
+# Rules grant commands permission to run outside the sandbox. Keep each allow
+# rule narrow: unmatched host-execution requests use the normal approval flow.
+
 # Read-only commands
 
 # Do not allow the `git` prefix itself. That would also permit destructive
@@ -48,34 +51,395 @@ prefix_rule(
     ],
 )
 
-# State-changing commands
+# Local Git workflow
 
-# These commands were explicitly approved before rules were moved into
-# dotfiles. Keep them separate from the read-only rules above.
 prefix_rule(
-    pattern = ["git", ["commit", "push"]],
+    pattern = ["git", ["add", "clone", "fetch", "merge"]],
     decision = "allow",
-    justification = "Explicitly approved Git publishing workflow",
+    justification = "Routine local Git development workflow",
+    match = [
+        "git add README.md",
+        "git add -A",
+        "git clone https://github.com/openai/codex.git",
+        "git fetch origin",
+        "git merge feature-branch",
+    ],
+    not_match = [
+        "git reset --hard HEAD",
+        "git rebase main",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", ["commit", "pull", "push", "switch"]],
+    decision = "allow",
+    justification = "Routine Git history, synchronization, and branch operations",
     match = [
         "git commit -m update",
-        "git push",
+        "git pull origin main",
         "git push origin feature-branch",
+        "git switch feature-branch",
     ],
     not_match = [
         "git add README.md",
-        "git reset --hard HEAD",
+        "git rebase main",
     ],
 )
-prefix_rule(pattern=["gh", "repo", "view"], decision="allow")
-prefix_rule(pattern=["gh", "repo", "create"], decision="allow")
-prefix_rule(pattern=["git", "add", "-A"], decision="allow")
-prefix_rule(pattern=["gh", "pr", "checks"], decision="allow")
-prefix_rule(pattern=["gh", "pr", "merge"], decision="allow")
-prefix_rule(pattern=["gh", "pr", "view"], decision="allow")
-prefix_rule(pattern=["git", "fetch"], decision="allow")
-prefix_rule(pattern=["git", "switch"], decision="allow")
-prefix_rule(pattern=["gh", "pr", "create"], decision="allow")
-prefix_rule(pattern=["gh", "run", "view"], decision="allow")
-prefix_rule(pattern=["gh", "pr"], decision="allow")
-prefix_rule(pattern=["git", "switch", "main"], decision="allow")
-prefix_rule(pattern=["pnpm", "create", "astro@latest"], decision="allow")
+
+# Prefix rules cannot detect a dangerous flag placed later in the command. Use
+# the forms tested below so destructive variants are caught by these prompts.
+prefix_rule(
+    pattern = ["git", "commit", "--amend"],
+    decision = "prompt",
+    justification = "Amending rewrites the current commit; confirm first",
+    match = [
+        "git commit --amend",
+        "git commit --amend --no-edit",
+    ],
+    not_match = [
+        "git commit -m update",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "pull", "--rebase"],
+    decision = "prompt",
+    justification = "Pulling with rebase can rewrite local history; confirm first",
+    match = [
+        "git pull --rebase",
+        "git pull --rebase origin main",
+    ],
+    not_match = [
+        "git pull origin main",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "git",
+        "push",
+        ["-d", "-f", "--delete", "--force", "--force-with-lease", "--mirror", "--prune"],
+    ],
+    decision = "prompt",
+    justification = "Force-pushing or deleting remote refs is destructive; confirm first",
+    match = [
+        "git push -f origin feature-branch",
+        "git push --force origin feature-branch",
+        "git push --force-with-lease origin feature-branch",
+        "git push --delete origin old-branch",
+        "git push --mirror origin",
+        "git push --prune origin",
+    ],
+    not_match = [
+        "git push origin feature-branch",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "switch", ["-f", "--discard-changes"]],
+    decision = "prompt",
+    justification = "Discarding local changes while switching branches is destructive; confirm first",
+    match = [
+        "git switch -f main",
+        "git switch --discard-changes main",
+    ],
+    not_match = [
+        "git switch main",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "rebase"],
+    decision = "prompt",
+    justification = "Rebase rewrites local history; confirm first",
+    match = [
+        "git rebase main",
+        "git rebase --interactive HEAD~3",
+    ],
+    not_match = [
+        "git merge main",
+    ],
+)
+
+# GitHub CLI
+
+# GitHub CLI needs host access for macOS Keychain credentials and GitHub API
+# networking. Permit routine development subcommands, never the `gh` prefix.
+prefix_rule(
+    pattern = ["gh", "auth", "status"],
+    decision = "allow",
+    justification = "Read-only GitHub authentication status",
+    match = [
+        "gh auth status",
+        "gh auth status --hostname github.com",
+    ],
+    not_match = [
+        "gh auth logout",
+        "gh auth refresh",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "repo", ["clone", "create", "fork", "list", "view"]],
+    decision = "allow",
+    justification = "Routine repository discovery and creation workflow",
+    match = [
+        "gh repo list",
+        "gh repo view openai/codex",
+        "gh repo create example --private",
+        "gh repo clone openai/codex",
+        "gh repo fork openai/codex",
+    ],
+    not_match = [
+        "gh repo delete example",
+        "gh repo edit example --visibility public",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "repo", ["archive", "delete", "edit", "rename"]],
+    decision = "prompt",
+    justification = "Repository deletion or administrative changes require confirmation",
+    match = [
+        "gh repo archive example",
+        "gh repo delete example",
+        "gh repo edit example --visibility public",
+        "gh repo rename new-name",
+    ],
+    not_match = [
+        "gh repo view example",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "gh",
+        "pr",
+        [
+            "checks",
+            "checkout",
+            "close",
+            "comment",
+            "create",
+            "diff",
+            "edit",
+            "list",
+            "merge",
+            "ready",
+            "reopen",
+            "review",
+            "status",
+            "view",
+        ],
+    ],
+    decision = "allow",
+    justification = "Routine pull request lifecycle workflow",
+    match = [
+        "gh pr list",
+        "gh pr view 123",
+        "gh pr create --fill",
+        "gh pr review 123 --approve",
+        "gh pr merge 123 --squash",
+        "gh pr close 123",
+    ],
+    not_match = [
+        "gh api repos/openai/codex/pulls",
+    ],
+)
+
+# Place --admin immediately after `merge` so this rule can detect the bypass.
+prefix_rule(
+    pattern = ["gh", "pr", "merge", "--admin"],
+    decision = "prompt",
+    justification = "Bypassing required checks or branch protection requires confirmation",
+    match = [
+        "gh pr merge --admin 123",
+        "gh pr merge --admin 123 --squash",
+    ],
+    not_match = [
+        "gh pr merge 123 --squash",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "gh",
+        "issue",
+        ["close", "comment", "create", "edit", "list", "reopen", "status", "view"],
+    ],
+    decision = "allow",
+    justification = "Routine issue lifecycle workflow",
+    match = [
+        "gh issue list",
+        "gh issue view 123",
+        "gh issue create --title bug --body details",
+        "gh issue comment 123 --body update",
+        "gh issue close 123",
+    ],
+    not_match = [
+        "gh issue delete 123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "delete"],
+    decision = "prompt",
+    justification = "Permanently deleting an issue requires confirmation",
+    match = [
+        "gh issue delete 123",
+    ],
+    not_match = [
+        "gh issue close 123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "run", ["cancel", "download", "list", "rerun", "view", "watch"]],
+    decision = "allow",
+    justification = "Routine GitHub Actions run inspection and control",
+    match = [
+        "gh run list",
+        "gh run view 123",
+        "gh run download 123",
+        "gh run rerun 123 --failed",
+        "gh run cancel 123",
+    ],
+    not_match = [
+        "gh run delete 123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "run", "delete"],
+    decision = "prompt",
+    justification = "Deleting a workflow run is destructive; confirm first",
+    match = [
+        "gh run delete 123",
+    ],
+    not_match = [
+        "gh run view 123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "workflow", ["list", "run", "view"]],
+    decision = "allow",
+    justification = "Routine GitHub Actions workflow inspection and dispatch",
+    match = [
+        "gh workflow list",
+        "gh workflow view ci.yml",
+        "gh workflow run ci.yml",
+    ],
+    not_match = [
+        "gh workflow disable ci.yml",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "workflow", ["disable", "enable"]],
+    decision = "prompt",
+    justification = "Changing whether a workflow runs can bypass repository automation; confirm first",
+    match = [
+        "gh workflow disable ci.yml",
+        "gh workflow enable ci.yml",
+    ],
+    not_match = [
+        "gh workflow view ci.yml",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "gh",
+        "release",
+        ["create", "download", "edit", "list", "upload", "verify", "verify-asset", "view"],
+    ],
+    decision = "allow",
+    justification = "Routine GitHub Release lifecycle workflow",
+    match = [
+        "gh release list",
+        "gh release view v1.0.0",
+        "gh release create v1.0.0 --generate-notes",
+        "gh release upload v1.0.0 dist/app.tar.gz",
+    ],
+    not_match = [
+        "gh release delete v1.0.0",
+        "gh release delete-asset v1.0.0 app.tar.gz",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "release", ["delete", "delete-asset"]],
+    decision = "prompt",
+    justification = "Deleting a release or release asset is destructive; confirm first",
+    match = [
+        "gh release delete v1.0.0",
+        "gh release delete-asset v1.0.0 app.tar.gz",
+    ],
+    not_match = [
+        "gh release view v1.0.0",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "api"],
+    decision = "prompt",
+    justification = "Arbitrary API calls can perform operations beyond the reviewed allow list",
+    match = [
+        "gh api user",
+        "gh api --method DELETE repos/owner/repo",
+    ],
+    not_match = [
+        "gh repo view owner/repo",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", ["secret", "variable"]],
+    decision = "prompt",
+    justification = "Credential and configuration access or changes require confirmation",
+    match = [
+        "gh secret set TOKEN",
+        "gh secret delete TOKEN",
+        "gh variable set API_URL --body https://example.com",
+    ],
+    not_match = [
+        "gh issue view 123",
+    ],
+)
+
+# Package acquisition
+
+# Installing packages may execute untrusted lifecycle scripts. Keep installation
+# approval-gated, with explicit allow rules only for reviewed package scaffolds.
+prefix_rule(
+    pattern = ["pnpm", ["add", "install"]],
+    decision = "prompt",
+    justification = "Dependency installation can download and execute third-party code; confirm first",
+    match = [
+        "pnpm add react",
+        "pnpm install",
+        "pnpm install --frozen-lockfile",
+    ],
+    not_match = [
+        "pnpm test",
+        "pnpm create astro@latest",
+    ],
+)
+
+# Other `pnpm create` targets remain unmatched and therefore use the normal
+# host-execution approval flow. Do not add a broader prompt rule: prompt
+# overrides allow.
+prefix_rule(
+    pattern = ["pnpm", "create", "astro@latest"],
+    decision = "allow",
+    justification = "Astro's latest official scaffold is explicitly trusted",
+    match = [
+        "pnpm create astro@latest",
+        "pnpm create astro@latest my-site",
+    ],
+    not_match = [
+        "pnpm create next-app@latest",
+        "pnpm add astro",
+    ],
+)

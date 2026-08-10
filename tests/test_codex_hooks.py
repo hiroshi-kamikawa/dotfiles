@@ -212,6 +212,10 @@ class CodexSetupWiringTests(unittest.TestCase):
 
         self.assertNotIn('"$SOURCE_DIR/config.toml"', codex_setup)
         self.assertNotIn('"$DESTINATION_DIR/config.toml"', codex_setup)
+        self.assertNotIn("AGENT_SKILLS_DIR", codex_setup)
+        self.assertNotIn("SHARED_SKILLS_DIR", codex_setup)
+        self.assertNotIn('"$HOME/.agents/skills"', root_setup)
+        self.assertNotIn('"$HOME/.claude/skills"', root_setup)
 
 
 if __name__ == "__main__":

@@ -4,8 +4,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_DIR="${1:-$SCRIPT_DIR}"
 DESTINATION_DIR="${2:-${CODEX_HOME:-$HOME/.codex}}"
-SHARED_SKILLS_DIR="${3:-$(cd "$SCRIPT_DIR/.." && pwd)/skills}"
-AGENT_SKILLS_DIR="${4:-${AGENTS_HOME:-$HOME/.agents}/skills}"
 
 for managed_file in AGENTS.md review.config.toml; do
   if [[ ! -f "$SOURCE_DIR/$managed_file" ]]; then
@@ -20,10 +18,6 @@ for managed_link in hooks.json hooks rules; do
     exit 1
   fi
 done
-
-bash "$SCRIPT_DIR/setup-link.sh" \
-  "$SHARED_SKILLS_DIR" \
-  "$AGENT_SKILLS_DIR"
 
 mkdir -p "$DESTINATION_DIR"
 
