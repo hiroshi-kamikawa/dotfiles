@@ -8,12 +8,12 @@ bash setup.sh
 ## Codex設定
 
 Codex の hooks とルールは `codex/` を正として管理する。`setup.sh` の実行時に、
-`hooks.json`、`hooks/`、`rules/` は `~/.codex/` の同名パスを
+`AGENTS.md`、`hooks.json`、`hooks/`、`rules/` は `~/.codex/` の同名パスを
 シンボリックリンクへ置き換える。
 
-`AGENTS.md` と `review.config.toml` は管理元の内容で同名ファイルを上書きする。
-この処理は既存の同名ファイル、ディレクトリ、管理外シンボリックリンクも
-置き換える。
+`review.config.toml` は管理元の内容で同名ファイルを上書きする。
+シンボリックリンクの作成時は、既存の同名ファイル、ディレクトリ、管理外の
+シンボリックリンクも置き換える。
 `~/.codex/config.toml` は端末ローカルの設定として扱い、dotfiles では管理せず、
 `setup.sh` からも変更しない。
 `auth.json`、履歴、キャッシュ、インストール済みプラグインなど、`codex/` に
