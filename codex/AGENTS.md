@@ -26,29 +26,3 @@ into the primary thread.
 Parallelize independent read-heavy tasks whenever possible.
 Keep architectural decisions, coordinated edits, and final verification in
 the primary thread.
-
-## Personal technology direction
-
-The canonical handbook is:
-
-- Local: `/Users/shoirhi/Documents/Codex/engineering-handbook/technology/stack-direction.md`
-- GitHub: `https://github.com/hiroshi-kamikawa/engineering-handbook`
-
-Read the canonical handbook before making material architecture, dependency,
-infrastructure, authentication, data, or CI/CD decisions.
-
-- Default to Cloudflare Workers, Astro, React, shadcn/ui, and Hono. Use EmDash
-  when customer-managed content is required.
-- Default to D1 for relational data, R2 for files, KV for eventually consistent
-  cache/configuration, and Durable Objects only for coordination that requires
-  them.
-- Use Cloudflare Access for internal applications. Use a managed authentication
-  service for customer-facing SaaS; never build password authentication.
-- Customer repositories, Cloudflare accounts, data, and third-party service
-  contracts must be customer-owned and independently handoff-ready.
-- Supervised Codex work may push directly to `main` after local verification.
-  Unattended Codex work must use an isolated branch and pull request.
-- Cloudflare Workers Builds is the only production deployment path and must run
-  lint, type checks, tests, and the production build before deployment.
-- Do not introduce parallel frameworks, duplicate API paths, compatibility
-  layers, or speculative abstractions without a demonstrated requirement.
