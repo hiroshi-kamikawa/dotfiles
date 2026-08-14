@@ -20,14 +20,25 @@ def run_hook(name: str, payload: dict) -> subprocess.CompletedProcess[str]:
 
 
 class PreToolUseTests(unittest.TestCase):
-    def test_allows_normal_git_push(self) -> None:
-        result = run_hook(
-            "pre_tool_use.py",
-            {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "git push origin main"}},
-        )
+    def test_allows_non_bypass_git_arguments(self) -> None:
+        for command in (
+            "git push origin main",
+            "git push -n origin main",
+            "git commit -- -n",
+            "git commit -m -n",
+            "git commit -F -n",
+            "git commit -Sn -m 'sign with key n'",
+            "git commit -t -n",
+            "git commit -uno",
+        ):
+            with self.subTest(command=command):
+                result = run_hook(
+                    "pre_tool_use.py",
+                    {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": command}},
+                )
 
-        self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout, "")
+                self.assertEqual(result.returncode, 0)
+                self.assertEqual(result.stdout, "")
 
     def test_blocks_force_push(self) -> None:
         for command in (
@@ -71,6 +82,11 @@ class PreToolUseTests(unittest.TestCase):
     def test_blocks_git_hook_bypass(self) -> None:
         for command in (
             "git commit --no-verify -m 'skip checks'",
+            "git commit -n -m 'skip checks'",
+            "git commit -nq -m 'skip checks'",
+            "git commit -nm 'skip checks'",
+            "git commit --gpg-sign -n -m 'skip checks'",
+            "git commit --untracked-files -n -m 'skip checks'",
             "git -c core.hooksPath=/dev/null commit -m 'skip hooks'",
             "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null git commit -m 'skip hooks'",
         ):
@@ -151,38 +167,6 @@ class UserPromptSubmitTests(unittest.TestCase):
         self.assertEqual(result.stdout, "")
 
 
-class PostToolUseTests(unittest.TestCase):
-    def test_warns_about_added_debug_statement(self) -> None:
-        result = run_hook(
-            "post_tool_use.py",
-            {
-                "hook_event_name": "PostToolUse",
-                "tool_name": "apply_patch",
-                "tool_input": {"command": "*** Begin Patch\n+console.log('debug')\n*** End Patch"},
-                "tool_response": {},
-            },
-        )
-
-        self.assertEqual(result.returncode, 0)
-        output = json.loads(result.stdout)
-        self.assertEqual(output["hookSpecificOutput"]["hookEventName"], "PostToolUse")
-        self.assertIn("デバッグ", output["hookSpecificOutput"]["additionalContext"])
-
-    def test_ignores_removed_debug_statement(self) -> None:
-        result = run_hook(
-            "post_tool_use.py",
-            {
-                "hook_event_name": "PostToolUse",
-                "tool_name": "apply_patch",
-                "tool_input": {"command": "*** Begin Patch\n-console.log('debug')\n+return value\n*** End Patch"},
-                "tool_response": {},
-            },
-        )
-
-        self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout, "")
-
-
 class HooksConfigTests(unittest.TestCase):
     def test_config_uses_codex_scripts(self) -> None:
         config = json.loads((ROOT / "codex" / "hooks.json").read_text())
@@ -191,7 +175,8 @@ class HooksConfigTests(unittest.TestCase):
         self.assertNotIn("CLAUDE_", serialized)
         self.assertIn("pre_tool_use.py", serialized)
         self.assertIn("user_prompt_submit.py", serialized)
-        self.assertIn("post_tool_use.py", serialized)
+        self.assertNotIn("PostToolUse", serialized)
+        self.assertNotIn("post_tool_use.py", serialized)
 
 
 class CodexSetupWiringTests(unittest.TestCase):

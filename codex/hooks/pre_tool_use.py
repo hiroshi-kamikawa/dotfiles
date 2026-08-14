@@ -57,6 +57,58 @@ def git_subcommand(arguments: tuple[str, ...]) -> Optional[str]:
     return None
 
 
+def has_git_option(arguments: tuple[str, ...], subcommand: str, option: str) -> bool:
+    command_arguments = arguments[arguments.index(subcommand) + 1 :]
+    if "--" in command_arguments:
+        command_arguments = command_arguments[: command_arguments.index("--")]
+    return option in command_arguments
+
+
+def commit_bypasses_hooks(arguments: tuple[str, ...], subcommand: str) -> bool:
+    options_with_values = {
+        "--author",
+        "--cleanup",
+        "--date",
+        "--file",
+        "--fixup",
+        "--message",
+        "--pathspec-from-file",
+        "--reedit-message",
+        "--reuse-message",
+        "--squash",
+        "--template",
+        "--trailer",
+    }
+    short_options_with_required_values = {"c", "f", "m", "t"}
+    short_options_with_optional_values = {"s", "u"}
+    command_arguments = arguments[arguments.index(subcommand) + 1 :]
+    index = 0
+    while index < len(command_arguments):
+        option = command_arguments[index]
+        if option == "--":
+            return False
+        if option in {"-n", "--no-verify"}:
+            return True
+        if option.startswith("-") and not option.startswith("--"):
+            for short_option in option[1:]:
+                if short_option == "n":
+                    return True
+                if short_option in short_options_with_required_values:
+                    index += 2 if option.endswith(short_option) else 1
+                    break
+                if short_option in short_options_with_optional_values:
+                    index += 1
+                    break
+            else:
+                index += 1
+            continue
+        if option in options_with_values:
+            index += 2
+        else:
+            index += 1
+    return False
+
+
 def nested_shell_command(segment: tuple[str, ...]) -> Optional[str]:
     for executable in ("bash", "sh", "zsh"):
         arguments = executable_arguments(segment, executable)
@@ -89,7 +141,9 @@ def destructive_git_reason(command: str, depth: int = 0) -> Optional[str]:
             return "Git hooks の無効化は許可されていません。"
 
         subcommand = git_subcommand(lowered)
-        if subcommand in PROTECTED_GIT_COMMANDS and "--no-verify" in lowered:
+        if subcommand == "commit" and commit_bypasses_hooks(lowered, subcommand):
+            return "--no-verify による Git hooks の回避は許可されていません。"
+        if subcommand in PROTECTED_GIT_COMMANDS and has_git_option(lowered, subcommand, "--no-verify"):
             return "--no-verify による Git hooks の回避は許可されていません。"
         force_option = any(
             token.startswith("--force") or (token.startswith("-") and not token.startswith("--") and "f" in token[1:])
