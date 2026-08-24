@@ -87,3 +87,6 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+
+# opencode
+export PATH=/Users/lease-emp-mac-hiroshi-kamikawa/.opencode/bin:$PATH

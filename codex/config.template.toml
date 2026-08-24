@@ -1,0 +1,23 @@
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+default_permissions = "github-dev"
+
+model_reasoning_effort = "medium"
+model_verbosity = "low"
+personality = "pragmatic"
+service_tier = "default"
+web_search = "cached"
+
+[permissions.github-dev.network]
+enabled = true
+
+[permissions.github-dev.network.domains]
+"**.github.com" = "allow"
+
+[permissions.github-dev]
+description = "Workspace development with GitHub network access."
+extends = ":workspace"
+
+[tui]
+status_line = ["model-with-reasoning", "context-remaining", "weekly-limit", "used-tokens"]
+status_line_use_colors = true
