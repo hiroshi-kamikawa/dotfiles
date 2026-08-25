@@ -11,3 +11,10 @@
 - Prefer established, well-maintained libraries when they reduce overall complexity or improve reliability. Do not reimplement common functionality without a clear reason.
 - Lean on the dependencies already in the project before writing your own implementation or adding packages. Do not assume a library lacks a capability without checking its documentation and types.
 - Make architectural decisions for the long term. Do not accept a stopgap that only works for now and is meant to be replaced later.
+
+## Agent delegation
+- Parent model focuses on planning, task decomposition, and final review.
+- Delegate codebase exploration, implementation, testing, and log analysis to `gpt-5.6-luna` when possible.
+- Subagents should return concise summaries instead of large code or log dumps.
+- Parent should inspect only relevant or high-risk code and avoid repeatedly rereading the full diff.
+- Minimize parent ↔ subagent review loops.
