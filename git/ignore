@@ -21,5 +21,3 @@ node_modules/
 
 # Thumbnails
 Thumbs.db
-
-**/.claude/settings.local.json

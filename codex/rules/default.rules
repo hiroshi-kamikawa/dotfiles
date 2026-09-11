@@ -54,34 +54,18 @@ prefix_rule(
 # Local Git workflow
 
 prefix_rule(
-    pattern = ["git", ["add", "clone", "fetch", "merge"]],
+    pattern = ["git", ["add", "fetch"]],
     decision = "allow",
-    justification = "Routine local Git development workflow",
+    justification = "Routine staging and remote-ref inspection",
     match = [
         "git add README.md",
         "git add -A",
-        "git clone https://github.com/openai/codex.git",
         "git fetch origin",
+    ],
+    not_match = [
+        "git clone https://github.com/openai/codex.git",
         "git merge feature-branch",
-    ],
-    not_match = [
         "git reset --hard HEAD",
-        "git rebase main",
-    ],
-)
-
-prefix_rule(
-    pattern = ["git", ["commit", "pull", "push", "switch"]],
-    decision = "allow",
-    justification = "Routine Git history, synchronization, and branch operations",
-    match = [
-        "git commit -m update",
-        "git pull origin main",
-        "git push origin feature-branch",
-        "git switch feature-branch",
-    ],
-    not_match = [
-        "git add README.md",
         "git rebase main",
     ],
 )
@@ -180,19 +164,74 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["gh", "repo", ["clone", "create", "fork", "list", "view"]],
+    pattern = ["gh", "status"],
     decision = "allow",
-    justification = "Routine repository discovery and creation workflow",
+    justification = "Read-only GitHub work summary",
+    match = [
+        "gh status",
+        "gh status --org openai",
+    ],
+    not_match = [
+        "gh pr create --fill",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "search", ["code", "commits", "issues", "prs", "repos"]],
+    decision = "allow",
+    justification = "Read-only GitHub search",
+    match = [
+        "gh search repos astro",
+        "gh search prs sandbox --owner openai",
+        "gh search code prefix_rule --repo openai/codex",
+    ],
+    not_match = [
+        "gh api repos/openai/codex",
+        "gh pr create --fill",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "repo", ["list", "view"]],
+    decision = "allow",
+    justification = "Read-only repository discovery",
     match = [
         "gh repo list",
         "gh repo view openai/codex",
-        "gh repo create example --private",
+    ],
+    not_match = [
         "gh repo clone openai/codex",
+        "gh repo create example --private",
+        "gh repo fork openai/codex",
+        "gh repo delete example",
+        "gh repo edit example --visibility public",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "repo", "clone"],
+    decision = "prompt",
+    justification = "Cloning writes a repository to a caller-selected host path; confirm first",
+    match = [
+        "gh repo clone openai/codex",
+    ],
+    not_match = [
+        "gh repo list",
+        "gh repo view openai/codex",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "repo", ["create", "fork"]],
+    decision = "prompt",
+    justification = "Creating repositories or forks changes GitHub state; confirm first",
+    match = [
+        "gh repo create example --private",
         "gh repo fork openai/codex",
     ],
     not_match = [
-        "gh repo delete example",
-        "gh repo edit example --visibility public",
+        "gh repo list",
+        "gh repo view openai/codex",
     ],
 )
 
@@ -217,33 +256,56 @@ prefix_rule(
         "pr",
         [
             "checks",
-            "checkout",
-            "close",
-            "comment",
-            "create",
             "diff",
-            "edit",
             "list",
-            "merge",
-            "ready",
-            "reopen",
-            "review",
             "status",
             "view",
         ],
     ],
     decision = "allow",
-    justification = "Routine pull request lifecycle workflow",
+    justification = "Read-only pull request inspection",
     match = [
         "gh pr list",
         "gh pr view 123",
+        "gh pr checks 123",
+        "gh pr diff 123",
+    ],
+    not_match = [
+        "gh pr create --fill",
+        "gh pr review 123 --approve",
+        "gh pr merge 123 --squash",
+        "gh api repos/openai/codex/pulls",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "gh",
+        "pr",
+        [
+            "checkout",
+            "close",
+            "comment",
+            "create",
+            "edit",
+            "merge",
+            "ready",
+            "reopen",
+            "review",
+        ],
+    ],
+    decision = "prompt",
+    justification = "Pull request mutations and checkout require confirmation",
+    match = [
+        "gh pr checkout 123",
         "gh pr create --fill",
         "gh pr review 123 --approve",
         "gh pr merge 123 --squash",
         "gh pr close 123",
     ],
     not_match = [
-        "gh api repos/openai/codex/pulls",
+        "gh pr list",
+        "gh pr view 123",
     ],
 )
 
@@ -265,19 +327,38 @@ prefix_rule(
     pattern = [
         "gh",
         "issue",
-        ["close", "comment", "create", "edit", "list", "reopen", "status", "view"],
+        ["list", "status", "view"],
     ],
     decision = "allow",
-    justification = "Routine issue lifecycle workflow",
+    justification = "Read-only issue inspection",
     match = [
         "gh issue list",
         "gh issue view 123",
+    ],
+    not_match = [
+        "gh issue create --title bug --body details",
+        "gh issue comment 123 --body update",
+        "gh issue close 123",
+        "gh issue delete 123",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "gh",
+        "issue",
+        ["close", "comment", "create", "edit", "reopen"],
+    ],
+    decision = "prompt",
+    justification = "Issue mutations require confirmation",
+    match = [
         "gh issue create --title bug --body details",
         "gh issue comment 123 --body update",
         "gh issue close 123",
     ],
     not_match = [
-        "gh issue delete 123",
+        "gh issue list",
+        "gh issue view 123",
     ],
 )
 
@@ -294,18 +375,34 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["gh", "run", ["cancel", "download", "list", "rerun", "view", "watch"]],
+    pattern = ["gh", "run", ["list", "view", "watch"]],
     decision = "allow",
-    justification = "Routine GitHub Actions run inspection and control",
+    justification = "Read-only GitHub Actions run inspection",
     match = [
         "gh run list",
         "gh run view 123",
+        "gh run watch 123",
+    ],
+    not_match = [
+        "gh run download 123",
+        "gh run rerun 123 --failed",
+        "gh run cancel 123",
+        "gh run delete 123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "run", ["cancel", "download", "rerun"]],
+    decision = "prompt",
+    justification = "Downloading artifacts or changing workflow runs requires confirmation",
+    match = [
         "gh run download 123",
         "gh run rerun 123 --failed",
         "gh run cancel 123",
     ],
     not_match = [
-        "gh run delete 123",
+        "gh run list",
+        "gh run view 123",
     ],
 )
 
@@ -322,16 +419,29 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["gh", "workflow", ["list", "run", "view"]],
+    pattern = ["gh", "workflow", ["list", "view"]],
     decision = "allow",
-    justification = "Routine GitHub Actions workflow inspection and dispatch",
+    justification = "Read-only GitHub Actions workflow inspection",
     match = [
         "gh workflow list",
         "gh workflow view ci.yml",
+    ],
+    not_match = [
+        "gh workflow run ci.yml",
+        "gh workflow disable ci.yml",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "workflow", "run"],
+    decision = "prompt",
+    justification = "Dispatching a workflow changes GitHub state; confirm first",
+    match = [
         "gh workflow run ci.yml",
     ],
     not_match = [
-        "gh workflow disable ci.yml",
+        "gh workflow list",
+        "gh workflow view ci.yml",
     ],
 )
 
@@ -352,19 +462,36 @@ prefix_rule(
     pattern = [
         "gh",
         "release",
-        ["create", "download", "edit", "list", "upload", "verify", "verify-asset", "view"],
+        ["list", "verify", "verify-asset", "view"],
     ],
     decision = "allow",
-    justification = "Routine GitHub Release lifecycle workflow",
+    justification = "Read-only GitHub Release inspection",
     match = [
         "gh release list",
         "gh release view v1.0.0",
+        "gh release verify v1.0.0",
+    ],
+    not_match = [
+        "gh release download v1.0.0",
+        "gh release create v1.0.0 --generate-notes",
+        "gh release upload v1.0.0 dist/app.tar.gz",
+        "gh release delete v1.0.0",
+        "gh release delete-asset v1.0.0 app.tar.gz",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "release", ["create", "download", "edit", "upload"]],
+    decision = "prompt",
+    justification = "Downloading or changing releases requires confirmation",
+    match = [
+        "gh release download v1.0.0",
         "gh release create v1.0.0 --generate-notes",
         "gh release upload v1.0.0 dist/app.tar.gz",
     ],
     not_match = [
-        "gh release delete v1.0.0",
-        "gh release delete-asset v1.0.0 app.tar.gz",
+        "gh release list",
+        "gh release view v1.0.0",
     ],
 )
 
@@ -408,38 +535,20 @@ prefix_rule(
     ],
 )
 
-# Package acquisition
-
-# Installing packages may execute untrusted lifecycle scripts. Keep installation
-# approval-gated, with explicit allow rules only for reviewed package scaffolds.
 prefix_rule(
-    pattern = ["pnpm", ["add", "install"]],
+    pattern = ["gh", "auth", ["login", "logout", "refresh"]],
     decision = "prompt",
-    justification = "Dependency installation can download and execute third-party code; confirm first",
+    justification = "Changing GitHub authentication requires confirmation",
     match = [
-        "pnpm add react",
-        "pnpm install",
-        "pnpm install --frozen-lockfile",
+        "gh auth login",
+        "gh auth logout --hostname github.com",
+        "gh auth refresh --hostname github.com",
     ],
     not_match = [
-        "pnpm test",
-        "pnpm create astro@latest",
+        "gh auth status",
     ],
 )
 
-# Other `pnpm create` targets remain unmatched and therefore use the normal
-# host-execution approval flow. Do not add a broader prompt rule: prompt
-# overrides allow.
-prefix_rule(
-    pattern = ["pnpm", "create", "astro@latest"],
-    decision = "allow",
-    justification = "Astro's latest official scaffold is explicitly trusted",
-    match = [
-        "pnpm create astro@latest",
-        "pnpm create astro@latest my-site",
-    ],
-    not_match = [
-        "pnpm create next-app@latest",
-        "pnpm add astro",
-    ],
-)
+# Package-manager commands intentionally have no host-execution allow rules.
+# npm registry traffic is allowed inside the workspace sandbox, so metadata,
+# installs, scaffolds, and project scripts retain filesystem isolation.

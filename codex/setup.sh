@@ -10,7 +10,7 @@ if [[ ! -f "$SOURCE_DIR/review.config.toml" ]]; then
   exit 1
 fi
 
-for managed_link in AGENTS.md hooks.json hooks rules; do
+for managed_link in hooks.json hooks rules; do
   if [[ ! -e "$SOURCE_DIR/$managed_link" ]]; then
     echo "Codex managed link does not exist: $SOURCE_DIR/$managed_link" >&2
     exit 1
@@ -23,7 +23,7 @@ bash "$SCRIPT_DIR/setup-config.sh" \
   "$SOURCE_DIR/review.config.toml" \
   "$DESTINATION_DIR/review.config.toml"
 
-for managed_link in AGENTS.md hooks.json hooks rules; do
+for managed_link in hooks.json hooks rules; do
   bash "$SCRIPT_DIR/setup-link.sh" \
     "$SOURCE_DIR/$managed_link" \
     "$DESTINATION_DIR/$managed_link"

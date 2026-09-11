@@ -101,6 +101,10 @@ defaults write com.apple.screencapture name -string "" # ファイル名の"Scre
 safe_defaults com.apple.screencapture type -string "jpg" # JPG形式で保存（軽量）
 safe_defaults com.apple.screencapture disable-shadow -bool true # ウィンドウ撮影時の影・装飾を無効化
 safe_defaults com.apple.screencapture style -string "selection" # デフォルトを範囲選択に
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 28 '{ enabled = 0; }' # 画面全体をファイルに保存（Shift+Command+3）を無効化
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 29 '{ enabled = 0; }' # 画面全体をクリップボードにコピー（Control+Shift+Command+3）を無効化
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 30 '{ enabled = 0; }' # 選択部分をファイルに保存（Shift+Command+4）を無効化
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 31 '{ enabled = 0; }' # 選択部分をクリップボードにコピー（Control+Shift+Command+4）を無効化
 
 # === セキュリティ ===
 safe_defaults com.apple.screensaver askForPassword -int 1 # スクリーンセーバー復帰時にパスワード要求

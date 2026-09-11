@@ -1,66 +1,86 @@
 # dotfiles
 
+macOS の個人設定。ターミナル・Neovim・IDEのカスタマイズは管理対象から外し、
+ルートの `setup.sh` を `cleanup.sh` に置き換えた。
+Git、Codex、Raycast、Dock/Finderなどの `macos.sh` は残している。
+`Brewfile` は残す開発ツール・アプリの一覧で、cleanup時にはインストールしない。
+
+## クリーンアップ
+
+Python 3 と macOS が必要。リポジトリの配置場所は任意。
+まず変更対象を表示する（Macの設定は変更しない）。
+
 ```bash
-cd ~/dotfiles
-bash setup.sh
+bash cleanup.sh --dry-run
 ```
 
-## Codex設定
-
-Codex の hooks とルールは `codex/` を正として管理する。`setup.sh` の実行時に、
-`AGENTS.md`、`hooks.json`、`hooks/`、`rules/` は `~/.codex/` の同名パスを
-シンボリックリンクへ置き換える。
-
-`review.config.toml` は管理元の内容で同名ファイルを上書きする。
-シンボリックリンクの作成時は、既存の同名ファイル、ディレクトリ、管理外の
-シンボリックリンクも置き換える。
-`~/.codex/config.toml` は端末ローカルの設定として扱い、dotfiles では管理せず、
-`setup.sh` からも変更しない。
-`auth.json`、履歴、キャッシュ、インストール済みプラグインなど、`codex/` に
-対応する管理元がない状態ファイルは変更しない。
-
-Codex設定だけを反映する場合は、ルートのセットアップ全体ではなく次を実行する。
+実際のクリーンアップは次のコマンドで行う。
+Terminal.app、Zed、VS Code、Cursor、Windsurf、Ghostty、cmuxを終了し、
+CodexのターミナルやSSHなど別のシェルから実行する。
+アプリが設定を上書きし直すことを防ぐため、起動中は実行を中断する。
+`sudo` は付けない。ログインシェルの変更が必要な場合だけ `chsh` が認証を求める。
 
 ```bash
-bash ~/dotfiles/codex/setup.sh
+bash cleanup.sh --apply
 ```
 
-現在の構成では、高確度の秘密情報、force push、`git reset --hard`、
-`--no-verify` や `core.hooksPath` による Git hooks の回避を実行前に防ぐ。
-ファイル編集後は追加されたデバッグ用コードを警告する。フォーマッターや
-テストはリポジトリごとに異なるため、グローバル hooks からは実行しない。
-これらは補助的なガードであり、完全なセキュリティ境界ではない。保護ブランチ、
-Git hooks、CI、専用の秘密情報スキャナーを主な防御として併用する。
+- Zshの起動設定5種（`.zshenv`、`.zprofile`、`.zshrc`、`.zlogin`、`.zlogout`）、
+  aliases、補完、Oh My Zsh、Powerlevel10k設定を退避。独自のPATHや環境変数も無効になる。
+- Neovimの設定、プラグイン、データ、キャッシュ、LuaRocks設定を退避。
+- Starship、Television、Zoxide、bat、eza、ripgrep、Ghostty、cmuxの設定・関連キャッシュを退避。
+- Zedのユーザー設定とキーマップは全体を退避し、アプリの既定値に戻す。
+- VS Code / Insiders / Cursor / Windsurfのユーザー設定と名前付きプロファイルから、
+  フォント、統合ターミナル、Vim/Neovim、テーマ・アイコンの上書きを除く。
+  JSONCのコメントと書式は保存後に整形されるが、対象外の設定値は保持する。
+- `~/.gitconfig` と `~/.config/git/config` に残るNeovimエディタ・batページャ指定を解除。
+- Terminal.appの設定を丸ごと書き出してから削除し、標準プロファイル・フォントへ戻す。
+  独自プロファイル、ショートカットなどもリセットする。
+- HomebrewのNeovim、Lua関連、bat、eza、fd、ripgrep、Starship、Television、Zoxide、
+  Zsh補助プラグイン、Homebrew版Zsh、過去に導入していたGhostty/cmux/UDEVフォントを削除。
+  手動配置のUDEVフォントも退避する。macOSの `/bin/zsh` は残し、ログインシェルにする。
+- 他パッケージが依存するformulaは保持し、終了コード `2` と「要確認」で報告する。
+  強制削除・一括autoremove・Homebrew本体の削除は行わない。
 
-リンク後に hooks を変更した場合は、Codex CLI の `/hooks` で内容を確認して
-再度信頼する。
+履歴、プロジェクト、Downloads、Gitのユーザー情報、Codex設定、Node/pnpm/gh、
+IDEアプリ本体、無関係なフォントは保持する。IDEの拡張機能やワークスペース設定、
+JetBrains/iTerm2などこのdotfilesで管理していないアプリ設定は対象外。
+標準と異なる `XDG_*` / `ZDOTDIR` が設定されている場合は中断する。
+`/etc` 配下のシステム設定は変更しない。
 
-## 自動アップデート
+起動設定を取り除くため、新しいシェルではHomebrewやCLI独自のPATHが使えなくなる場合がある。
+Homebrewは `/opt/homebrew/bin/brew`（Apple Silicon）または `/usr/local/bin/brew`（Intel）から呼べる。
+全Macの工場出荷状態への復元ではなく、上記のユーザー設定の初期化を行う。
 
-`setup.sh` を実行すると、Homebrew と Claude Code を毎日 12:00 に自動更新する
-LaunchAgent (`com.shoirhi.dotfiles.autoupdate`) がインストールされる。
+## バックアップと復元
 
-- 更新内容: `brew update` / `brew upgrade` / `brew cleanup` / `claude update`
-- 実行時刻にスリープ・電源オフでも、次回起動・復帰時に一度だけ実行される
-- ログ: `~/.local/state/dotfiles/auto-update.log`
-- 完了時は macOS の通知センターに結果を表示（正常完了 / 失敗したステップ一覧）
+実行ごとに `~/.dotfiles-cleanup-backups/日時-ID/` を作成する（所有者のみアクセス可）。
+途中で失敗した場合もバックアップは残る。復元する設定を選び、対象アプリを終了してから戻す。
 
-### 手動実行・管理
+- `files/` はホームからの相対パスと同じ構造。現在の同名ファイルを別途退避し、元の場所へ戻す。
+- シンボリックリンクはリンク自体を保存し、読み取れるリンク先は隣の `.resolved` にも保存。
+  dotfilesから削除済みのリンク先はGit履歴から復元する必要がある。
+  例: `git restore --source=<削除前コミット> -- zsh nvim zed`。
+  この操作はリポジトリの該当ファイルを上書きするので、現在の変更を確認してから使う。
+- Terminal設定: `defaults import com.apple.Terminal "バックアップの絶対パス/Terminal.plist"`。
+- `login-shell.txt` に元のログインシェル、`brew-formulae.txt` と `brew-casks.txt` に導入済み一覧を保存。
+  パッケージ本体は保存しない。必要なものだけ `brew install` で再導入する（元の版の保証はない）。
+
+再実行は可能。既に退避済みのファイル・未導入パッケージはスキップする。
+アプリを再起動し、Terminalの新規ウィンドウ、通常の `ls` / `cat` / `cd`、IDEのフォントを確認する。
+設定同期が有効なIDEでは、同期元からカスタマイズが戻る場合もある。
+
+## 残した設定
+
+`macos.sh`、`git/`、`codex/`、`raycast/` はそれぞれ独立して管理する。
+cleanupはこれらのセットアップを実行しない。Git設定からNeovimとbatの指定は削除済み。
+既存のCodex関連の変更はこのクリーンアップとは別のものとして維持している。
+
+## 検証
+
+Macの設定を変更せず、一時ディレクトリとモックでクリーンアップを検証する。
 
 ```bash
-# 手動で今すぐ更新
-bash ~/dotfiles/scripts/auto-update.sh
-
-# 即時実行（launchd経由で起動）
-launchctl start com.shoirhi.dotfiles.autoupdate
-
-# 登録状態の確認
-launchctl list | grep autoupdate
-
-# 一時停止 / 再開
-launchctl unload ~/Library/LaunchAgents/com.shoirhi.dotfiles.autoupdate.plist
-launchctl load   ~/Library/LaunchAgents/com.shoirhi.dotfiles.autoupdate.plist
-
-# ログ確認
-tail -f ~/.local/state/dotfiles/auto-update.log
+bash -n cleanup.sh
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_cleanup.py'
+bash cleanup.sh --dry-run
 ```

@@ -14,7 +14,6 @@ printf '%s\n' 'preserve' >"$AGENT_SKILLS_DIR/codex-only/SKILL.md"
 printf '%s\n' 'preserve' >"$DESTINATION_DIR/auth.json"
 printf '%s\n' 'preserve' >"$DESTINATION_DIR/sessions/session.jsonl"
 printf '%s\n' 'old config' >"$DESTINATION_DIR/config.toml"
-printf '%s\n' 'old instructions' >"$DESTINATION_DIR/AGENTS.md"
 mkdir -p "$DESTINATION_DIR/hooks"
 printf '%s\n' 'old hook' >"$DESTINATION_DIR/hooks/old.py"
 
@@ -29,7 +28,7 @@ cmp -s "$ROOT_DIR/codex/review.config.toml" "$DESTINATION_DIR/review.config.toml
 [[ -f "$DESTINATION_DIR/review.config.toml" && ! -L "$DESTINATION_DIR/review.config.toml" ]]
 [[ "$(stat -f '%Lp' "$DESTINATION_DIR/review.config.toml")" == "600" ]]
 
-for managed_link in AGENTS.md hooks.json hooks rules; do
+for managed_link in hooks.json hooks rules; do
   [[ -L "$DESTINATION_DIR/$managed_link" ]]
   [[ "$(readlink "$DESTINATION_DIR/$managed_link")" == "$ROOT_DIR/codex/$managed_link" ]]
 done

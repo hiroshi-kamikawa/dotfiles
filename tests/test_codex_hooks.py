@@ -172,7 +172,6 @@ class HooksConfigTests(unittest.TestCase):
         config = json.loads((ROOT / "codex" / "hooks.json").read_text())
         serialized = json.dumps(config)
 
-        self.assertNotIn("CLAUDE_", serialized)
         self.assertIn("pre_tool_use.py", serialized)
         self.assertIn("user_prompt_submit.py", serialized)
         self.assertNotIn("PostToolUse", serialized)
@@ -189,7 +188,6 @@ class CodexSetupWiringTests(unittest.TestCase):
         for managed_name in (
             "hooks.json",
             "hooks",
-            "AGENTS.md",
             "review.config.toml",
         ):
             with self.subTest(managed_name=managed_name):
@@ -200,7 +198,6 @@ class CodexSetupWiringTests(unittest.TestCase):
         self.assertNotIn("AGENT_SKILLS_DIR", codex_setup)
         self.assertNotIn("SHARED_SKILLS_DIR", codex_setup)
         self.assertNotIn('"$HOME/.agents/skills"', root_setup)
-        self.assertNotIn('"$HOME/.claude/skills"', root_setup)
 
 
 if __name__ == "__main__":

@@ -2,4 +2,3 @@
 __pycache__/
 *.py[cod]
 nvim/lazy-lock.json
-.claude/
