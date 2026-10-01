@@ -1,7 +1,0 @@
-brew "gh"
-brew "node"
-brew "pnpm"
-cask "appcleaner"
-cask "orbstack"
-cask "shottr"
-cask "zed"
