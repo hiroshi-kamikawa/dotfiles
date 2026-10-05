@@ -1,0 +1,8 @@
+brew "starship"
+brew "fzf"
+brew "eza"
+brew "zoxide"
+brew "bat"
+brew "zsh-autosuggestions"
+brew "zsh-syntax-highlighting"
+cask "font-meslo-lg-nerd-font"

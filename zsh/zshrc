@@ -1,0 +1,61 @@
+# 対話シェルだけに適用する。
+[[ -o interactive ]] || return 0
+[[ -z ${_DOTFILES_ZSH_LOADED:-} ]] || return 0
+typeset -g _DOTFILES_ZSH_LOADED=1
+
+# macOSのApple Silicon / Intel両方に対応。
+if (( ! $+commands[brew] )); then
+  for _dotfiles_brew in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+    if [[ -x $_dotfiles_brew ]]; then
+      eval "$("$_dotfiles_brew" shellenv)"
+      break
+    fi
+  done
+  unset _dotfiles_brew
+fi
+
+# 標準の履歴ファイルを維持し、タブ間で共有する。
+HISTFILE=${HISTFILE:-${ZDOTDIR:-$HOME}/.zsh_history}
+HISTSIZE=100000
+SAVEHIST=100000
+unsetopt INC_APPEND_HISTORY INC_APPEND_HISTORY_TIME
+setopt EXTENDED_HISTORY SHARE_HISTORY HIST_IGNORE_DUPS HIST_FIND_NO_DUPS
+setopt HIST_SAVE_NO_DUPS HIST_REDUCE_BLANKS
+
+if (( $+commands[brew] )); then
+  typeset _dotfiles_brew_prefix=${HOMEBREW_PREFIX:-$(brew --prefix)}
+  fpath=("$_dotfiles_brew_prefix/share/zsh/site-functions" $fpath)
+fi
+if (( ! $+functions[compdef] )); then
+  autoload -Uz compinit
+  compinit
+fi
+
+if (( $+commands[eza] )); then
+  alias ls='eza --icons=auto --group-directories-first'
+  alias ll='ls --long --header --git'
+  alias la='ll --all'
+  alias lt='ls --tree --level=2'
+fi
+
+if (( $+commands[fzf] )); then
+  source <(fzf --zsh)
+fi
+if (( $+commands[zoxide] )); then
+  eval "$(zoxide init zsh)"
+fi
+if (( $+commands[starship] )); then
+  export STARSHIP_CONFIG="${${(%):-%N}:A:h:h}/starship.toml"
+  eval "$(starship init zsh)"
+fi
+
+if [[ -n ${_dotfiles_brew_prefix:-} ]]; then
+  if [[ -r $_dotfiles_brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
+    source "$_dotfiles_brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  fi
+  # ウィジェットと他のプラグインを定義した後、最後に読み込む。
+  if [[ -r $_dotfiles_brew_prefix/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
+    source "$_dotfiles_brew_prefix/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+  fi
+fi
+unset _dotfiles_brew_prefix

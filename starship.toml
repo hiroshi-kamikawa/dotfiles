@@ -1,0 +1,11 @@
+format = "$directory$git_branch$git_status$cmd_duration$line_break$character"
+
+[directory]
+truncation_length = 3
+
+[git_branch]
+symbol = "git:"
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
